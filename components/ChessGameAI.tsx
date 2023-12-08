@@ -7,6 +7,8 @@ import './chessboard-1.0.0.min.css';
 import {Game} from 'js-chess-engine';
 import {useEffect} from "react";
 
+import {ChessBoard} from './chessbrd/chessbrd';
+
 export const ChessGameAI = () => {
     
     let board: any = null
@@ -74,18 +76,15 @@ export const ChessGameAI = () => {
     
     
     useEffect(() => {
-        // @ts-ignore
-        board = Chessboard('myBoard', config);
+       
+        board = ChessBoard('myBoard', config);
     });
     
     
     
     return(
         <>
-            <script src="/js/jquery-3.4.1.min.js"></script>
             <div id="myBoard" className={"bsize"}></div>
-            <script src="/js/chessboard-1.0.0.min.js"></script>
-        
         </>
     );
     
