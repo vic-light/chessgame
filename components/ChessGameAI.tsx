@@ -5,16 +5,25 @@ import './chessboard-1.0.0.min.css';
 
 // @ts-ignore
 import {Game} from 'js-chess-engine';
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 
 import {ChessBoard} from './chessbrd/chessbrd';
+import {Modal} from "@/components/modal/Modal";
+
+
+var message_data = {};
+
+var board: any = null
+const game = new Game();
+
+var first = false;
+
+
+
 
 export const ChessGameAI = () => {
     
-    let board: any = null
-    let game = new Game();
-    
-    
+    const [viewAlert, setViewAlert] = useState(false);
     
     function onDragStart (source: any, piece: any, position: any, orientation: any) {
         // do not pick up pieces if the game is over
@@ -33,10 +42,32 @@ export const ChessGameAI = () => {
         return obj.isFinished;
     }
     
+    function isCheckMate() : boolean
+    {
+        let obj: any = game.exportJson();
+        
+        if (obj.isFinished && obj.checkMate){
+            return true;
+        }
+        
+        return false;
+    }
+    
     function makeRandomMove () {
         
         game.aiMove();
         board.position(game.exportFEN());
+        
+        if (isGameOver()){
+            
+            if (isCheckMate()){
+                showAlert("Увы!!! Вы Проиграли!!!", "ПОРАЖЕНИЕ");
+            }else {
+                showAlert("Игра завершилась в ничью", "Ничья!!!");
+            }
+            
+        }
+        
     }
     
     
@@ -50,7 +81,17 @@ export const ChessGameAI = () => {
             
             console.log("onDrop move", move);
             
-            setTimeout(makeRandomMove, 250);
+            if (!isGameOver()){
+                setTimeout(makeRandomMove, 250);
+            }else {
+                
+                if (isCheckMate()){
+                    showAlert("Поздравляем!!! Вы Выиграли!!!", "ПОБЕДА");
+                }else {
+                    showAlert("Игра завершилась в ничью", "Ничья!!!");
+                }
+            
+            }
             
         }catch (e){
             return 'snapback';
@@ -66,6 +107,26 @@ export const ChessGameAI = () => {
         board.position(game.exportFEN());
     }
     
+    const onAlertClose = () => {
+        setViewAlert(false);
+    };
+    
+    
+    const showAlert = (cont: string, title: string): void => {
+        
+        message_data = {
+            title: title,
+            content: cont
+        };
+        
+        setViewAlert(true);
+        
+    };
+    
+    const onClickCall = () => {
+        showAlert("Игра началась!!!", "Шахматный клуб");
+    };
+    
     var config = {
         draggable: true,
         position: 'start',
@@ -76,15 +137,28 @@ export const ChessGameAI = () => {
     
     
     useEffect(() => {
-       
+        
+        console.log("call use effect!!!");
         board = ChessBoard('myBoard', config);
-    });
+      /*
+        if (!first){
+            first = true;
+            
+            
+            console.log("call use effect and board!!!");
+        }
+        
+       */
+       
+    }, []);
     
     
     
     return(
         <>
             <div id="myBoard" className={"bsize"}></div>
+            {viewAlert && <Modal datap={message_data} onClose={onAlertClose}/>}
+            <button onClick={onClickCall}>Alert call</button>
         </>
     );
     
